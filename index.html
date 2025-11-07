@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>US Visa Scanner</title>
+    <title>US Visa Document Scanner</title>
     <script src="https://unpkg.com/tesseract.js@4.1.1/dist/tesseract.min.js"></script>
     <style>
         body { 
@@ -26,102 +26,331 @@
             background: rgba(26, 35, 126, 0.05);
             cursor: pointer;
         }
+        select, button {
+            width: 100%;
+            padding: 12px;
+            margin: 10px 0;
+            border: 2px solid #1a237e;
+            border-radius: 5px;
+            font-size: 16px;
+        }
         button {
             background: #1a237e;
             color: white;
-            border: none;
-            padding: 12px 30px;
-            border-radius: 5px;
-            font-size: 16px;
             cursor: pointer;
         }
-        .results {
-            display: none;
-            margin-top: 20px;
-            padding: 20px;
-            border-radius: 8px;
+        .checklist {
             background: #f8f9fa;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 15px 0;
+            border-left: 4px solid #1a237e;
+        }
+        .found { color: #22c55e; }
+        .missing { color: #ef4444; }
+        .progress-bar {
+            background: #e5e7eb;
+            height: 20px;
+            border-radius: 10px;
+            margin: 10px 0;
+        }
+        .progress-fill {
+            background: #22c55e;
+            height: 100%;
+            border-radius: 10px;
+            transition: width 0.3s;
         }
     </style>
 </head>
 <body>
     <div class="container">
         <h1>🇺🇸 US Visa Document Scanner</h1>
+        <p>Upload your documents to check if you have everything needed</p>
         
-        <div class="upload-area" onclick="document.getElementById('fileInput').click()">
-            <h3>📤 Click to Upload Documents</h3>
-            <p>Supported: JPG, PNG, PDF</p>
-            <input type="file" id="fileInput" accept="image/*" style="display: none;" onchange="handleFileSelect(this.files)">
+        <!-- Visa Type Selection -->
+        <label><strong>Select Visa Type:</strong></label>
+        <select id="visaType" onchange="updateChecklist()">
+            <option value="B1/B2">B1/B2 - Tourist/Business Visa</option>
+            <option value="F1">F1 - Student Visa</option>
+            <option value="H1B">H1B - Work Visa</option>
+            <option value="J1">J1 - Exchange Visitor</option>
+            <option value="L1">L1 - Intracompany Transfer</option>
+            <option value="K1">K1 - Fiancé(e) Visa</option>
+            <option value="CR1">CR1/IR1 - Spouse Visa</option>
+            <option value="ESTA">ESTA - Visa Waiver Program</option>
+        </select>
+
+        <!-- Dynamic Checklist -->
+        <div class="checklist">
+            <strong>Required Documents:</strong>
+            <div id="checklistItems"></div>
         </div>
 
-        <div id="results" class="results">
-            <h3>Scan Results:</h3>
+        <!-- File Upload -->
+        <div class="upload-area" onclick="document.getElementById('fileInput').click()">
+            <h3>📤 Upload Your Documents</h3>
+            <p>Take photos of all your documents and upload here</p>
+            <p><small>Supported: JPG, PNG, PDF (multiple files allowed)</small></p>
+            <input type="file" id="fileInput" accept="image/*,.pdf" multiple style="display: none;" onchange="handleFileSelect(this.files)">
+        </div>
+
+        <!-- Results -->
+        <div id="results" style="display: none;">
+            <h3>Scan Results</h3>
             <div id="resultsContent"></div>
         </div>
     </div>
 
     <script>
+        // Comprehensive visa checklists
+        const visaChecklists = {
+            "B1/B2": [
+                "DS-160 confirmation page",
+                "Passport valid 6 months",
+                "Photo 2x2 inches",
+                "Financial evidence bank statements",
+                "Employment verification letter",
+                "Travel itinerary",
+                "Hotel reservations",
+                "Previous travel history",
+                "Ties to home country proof"
+            ],
+            "F1": [
+                "Form I-20",
+                "DS-160 confirmation",
+                "Passport valid 6 months",
+                "Photo 2x2 inches",
+                "SEVIS I-901 fee receipt",
+                "Financial support documents",
+                "Academic transcripts diplomas",
+                "Standardized test scores",
+                "University acceptance letter"
+            ],
+            "H1B": [
+                "Form I-129 petition",
+                "LCA certified ETA-9035",
+                "Passport valid 6 months",
+                "Photo 2x2 inches",
+                "Educational credentials degrees",
+                "Resume work experience",
+                "Employer support letter",
+                "Job description duties",
+                "Previous employment proof"
+            ],
+            "J1": [
+                "Form DS-2019",
+                "DS-160 confirmation",
+                "Passport valid 6 months",
+                "Photo 2x2 inches",
+                "SEVIS I-901 fee receipt",
+                "Program acceptance letter",
+                "Financial support evidence",
+                "Insurance coverage proof",
+                "Home country residency proof"
+            ],
+            "L1": [
+                "Form I-129S",
+                "Passport valid 6 months",
+                "Photo 2x2 inches",
+                "Company petition documents",
+                "Employment history proof",
+                "Manager executive evidence",
+                "Company financial documents",
+                "US office premises proof",
+                "Specialized knowledge proof"
+            ],
+            "K1": [
+                "Form I-129F approval",
+                "DS-160 confirmation",
+                "Passport valid 6 months",
+                "Photo 2x2 inches",
+                "Evidence of relationship photos",
+                "Passport style photos both",
+                "Meeting in person proof",
+                "Intent to marry letters",
+                "Financial support I-134"
+            ],
+            "CR1": [
+                "Form I-130 approval",
+                "DS-260 confirmation",
+                "Passport valid 6 months",
+                "Photo 2x2 inches",
+                "Marriage certificate",
+                "Evidence of relationship",
+                "Financial support I-864",
+                "Medical examination results",
+                "Police certificates"
+            ],
+            "ESTA": [
+                "Passport valid 6 months",
+                "Travel itinerary details",
+                "Personal information",
+                "Employment information",
+                "Emergency contact details",
+                "Payment credit card",
+                "Recent travel history",
+                "Security questions answers"
+            ]
+        };
+
+        function updateChecklist() {
+            const visaType = document.getElementById('visaType').value;
+            const checklistDiv = document.getElementById('checklistItems');
+            const items = visaChecklists[visaType];
+            
+            checklistDiv.innerHTML = items.map(item => 
+                `<div style="padding: 5px 0; border-bottom: 1px solid #eee;">• ${item}</div>`
+            ).join('');
+        }
+
         async function handleFileSelect(files) {
             if (!files.length) return;
             
-            const file = files[0];
+            const visaType = document.getElementById('visaType').value;
             const resultsDiv = document.getElementById('results');
             const resultsContent = document.getElementById('resultsContent');
             
             resultsDiv.style.display = 'block';
-            resultsContent.innerHTML = '<p>🔄 Scanning document... This may take 10-30 seconds</p>';
+            resultsContent.innerHTML = '<p>🔄 Scanning documents... This may take 1-2 minutes</p>';
             
             try {
-                console.log('Starting OCR...');
+                let allText = '';
                 
-                // SIMPLE OCR - This actually works
-                const { data: { text } } = await Tesseract.recognize(
-                    file,
-                    'eng',
-                    { 
-                        logger: m => console.log(m.status) 
-                    }
-                );
+                // Process each file
+                for (let i = 0; i < files.length; i++) {
+                    resultsContent.innerHTML = `<p>🔄 Scanning document ${i+1}/${files.length}...</p>`;
+                    const text = await Tesseract.recognize(files[i], 'eng');
+                    allText += '\n\n' + text.data.text;
+                }
                 
-                console.log('OCR completed:', text.substring(0, 100));
+                // Analyze against visa checklist
+                const analysis = analyzeVisaDocuments(allText, visaType);
                 
-                // Simple analysis
-                const analysis = analyzeText(text);
-                
-                // Display results
-                resultsContent.innerHTML = `
-                    <div style="color: green; font-weight: bold;">✅ Scan Complete!</div>
-                    <p><strong>Found text:</strong> ${text.length} characters</p>
-                    <div style="background: white; padding: 15px; border-radius: 5px; margin-top: 10px;">
-                        <strong>Extracted Text Preview:</strong>
-                        <pre style="white-space: pre-wrap; font-size: 12px;">${text.substring(0, 500)}...</pre>
-                    </div>
-                `;
+                // Display comprehensive results
+                displayResults(analysis, allText, visaType);
                 
             } catch (error) {
-                console.error('Error:', error);
-                resultsContent.innerHTML = `<p style="color: red;">Error: ${error.message}</p>`;
+                resultsContent.innerHTML = `
+                    <div style="color: #ef4444;">
+                        <h4>❌ Scanning Error</h4>
+                        <p>${error.message}</p>
+                        <p>Please try uploading clearer images or check file format.</p>
+                    </div>
+                `;
             }
         }
 
-        function analyzeText(text) {
-            // Simple keyword checking
-            const keywords = ['passport', 'visa', 'application', 'date', 'name', 'address'];
-            const found = keywords.filter(keyword => 
-                text.toLowerCase().includes(keyword)
-            );
+        function analyzeVisaDocuments(text, visaType) {
+            const checklist = visaChecklists[visaType];
+            const lowerText = text.toLowerCase();
+            
+            const found = [];
+            const missing = [];
+            
+            // Check each required document
+            checklist.forEach(item => {
+                // Create search terms for each document type
+                const searchTerms = getSearchTerms(item);
+                const isFound = searchTerms.some(term => lowerText.includes(term));
+                
+                if (isFound) {
+                    found.push(item);
+                } else {
+                    missing.push(item);
+                }
+            });
+            
+            const score = (found.length / checklist.length) * 100;
+            let status, recommendation;
+            
+            if (score >= 80) {
+                status = "READY_TO_APPLY";
+                recommendation = "Your documents appear complete. Ready for visa application.";
+            } else if (score >= 60) {
+                status = "NEEDS_REVIEW";
+                recommendation = "Most documents found but review missing items carefully.";
+            } else {
+                status = "INCOMPLETE";
+                recommendation = "Several key documents missing. Upload remaining documents.";
+            }
             
             return {
-                foundKeywords: found,
-                confidence: (found.length / keywords.length) * 100
+                status: status,
+                found: found,
+                missing: missing,
+                score: score,
+                recommendation: recommendation,
+                totalItems: checklist.length
             };
         }
 
-        // Test that buttons work
-        console.log('Script loaded successfully');
-        document.addEventListener('DOMContentLoaded', function() {
-            console.log('DOM loaded - buttons should work');
-        });
+        function getSearchTerms(documentType) {
+            const termMap = {
+                "DS-160": ["ds-160", "ds160", "160 confirmation"],
+                "Passport": ["passport", "pass port", "travel document"],
+                "Photo": ["photo", "photograph", "2x2", "passport photo"],
+                "Financial": ["bank", "statement", "financial", "funds", "balance"],
+                "Employment": ["employment", "employer", "job", "work", "salary"],
+                "I-20": ["i-20", "i20", "form i-20"],
+                "I-129": ["i-129", "i129", "petition"],
+                "Marriage": ["marriage", "wedding", "spouse", "wife", "husband"],
+                "Travel": ["itinerary", "flight", "hotel", "travel", "trip"]
+            };
+            
+            // Return relevant search terms for each document type
+            for (const [key, terms] of Object.entries(termMap)) {
+                if (documentType.toLowerCase().includes(key.toLowerCase())) {
+                    return terms;
+                }
+            }
+            
+            // Default: use words from document name
+            return documentType.toLowerCase().split(' ').filter(word => word.length > 3);
+        }
+
+        function displayResults(analysis, extractedText, visaType) {
+            const resultsContent = document.getElementById('resultsContent');
+            
+            resultsContent.innerHTML = `
+                <div style="text-align: center; margin-bottom: 20px;">
+                    <h2 style="color: ${analysis.status === 'READY_TO_APPLY' ? '#22c55e' : analysis.status === 'NEEDS_REVIEW' ? '#f59e0b' : '#ef4444'}">
+                        ${analysis.status === 'READY_TO_APPLY' ? '✅ READY TO APPLY' : 
+                          analysis.status === 'NEEDS_REVIEW' ? '⚠️ REVIEW NEEDED' : '❌ INCOMPLETE'}
+                    </h2>
+                    <div style="font-size: 24px; margin: 10px 0;">${analysis.score.toFixed(1)}% Complete</div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="width: ${analysis.score}%"></div>
+                    </div>
+                    <p>${analysis.found.length} of ${analysis.totalItems} documents found</p>
+                </div>
+                
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin: 20px 0;">
+                    <div style="background: #f0f9ff; padding: 15px; border-radius: 8px;">
+                        <h4 class="found">✅ Found (${analysis.found.length})</h4>
+                        ${analysis.found.map(item => `<div style="padding: 8px; border-bottom: 1px solid #e5e7eb;">✓ ${item}</div>`).join('')}
+                    </div>
+                    <div style="background: #fef2f2; padding: 15px; border-radius: 8px;">
+                        <h4 class="missing">❌ Missing (${analysis.missing.length})</h4>
+                        ${analysis.missing.map(item => `<div style="padding: 8px; border-bottom: 1px solid #e5e7eb;">✗ ${item}</div>`).join('')}
+                    </div>
+                </div>
+                
+                <div style="background: #1a237e; color: white; padding: 15px; border-radius: 8px; margin-top: 20px;">
+                    <h4 style="margin-top: 0;">🎯 Recommendation</h4>
+                    <p style="margin: 0; font-size: 16px;"><strong>${analysis.recommendation}</strong></p>
+                </div>
+                
+                <details style="margin-top: 20px;">
+                    <summary style="cursor: pointer; font-weight: bold; color: #1a237e;">📋 View Extracted Text</summary>
+                    <pre style="background: #f8f9fa; padding: 15px; border-radius: 5px; font-size: 11px; max-height: 200px; overflow: auto; margin-top: 10px; white-space: pre-wrap;">
+${extractedText.substring(0, 2000)}...
+                    </pre>
+                </details>
+            `;
+        }
+
+        // Initialize checklist on load
+        document.addEventListener('DOMContentLoaded', updateChecklist);
     </script>
 </body>
 </html>

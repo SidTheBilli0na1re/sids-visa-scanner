@@ -3,403 +3,767 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SCANNER • VISAFLOW</title>
+    <title>US Visa Document Scanner - Official Grade</title>
     <script src="https://unpkg.com/tesseract.js@4.1.1/dist/tesseract.min.js"></script>
     <style>
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-            font-weight: 600;
         }
-
+        
         body {
-            background: #000000;
-            color: #ffffff;
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background: #f8f9fa;
             min-height: 100vh;
-            line-height: 1.2;
-            padding: 40px 20px;
         }
 
         .container {
-            max-width: 800px;
+            max-width: 1200px;
             margin: 0 auto;
+            padding: 20px;
         }
 
-        /* HEADER */
         .header {
-            display: flex;
-            align-items: center;
-            gap: 20px;
-            margin-bottom: 40px;
-            border-bottom: 2px solid #333;
-            padding-bottom: 20px;
+            background: linear-gradient(135deg, #1a237e 0%, #303f9f 100%);
+            color: white;
+            padding: 2rem;
+            border-radius: 12px;
+            margin-bottom: 2rem;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
         }
 
-        .back-btn {
-            background: #fff;
-            color: #000;
-            border: none;
-            padding: 10px;
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
             font-weight: 700;
-            cursor: pointer;
-            text-decoration: none;
         }
 
-        .title {
-            font-size: 24px;
-            font-weight: 800;
+        .header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
         }
 
-        /* CARD */
-        .card {
-            background: #111;
-            border: 1px solid #333;
-            padding: 40px;
-            margin-bottom: 30px;
+        .disclaimer {
+            background: #fff3cd;
+            border: 2px solid #ffc107;
+            padding: 1.5rem;
+            border-radius: 8px;
+            margin-bottom: 2rem;
+            font-weight: 500;
+        }
+
+        .disclaimer h3 {
+            color: #856404;
+            margin-bottom: 0.5rem;
+        }
+
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        @media (max-width: 768px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .form-section, .results-section {
+            background: white;
+            padding: 2rem;
+            border-radius: 12px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
 
         .form-group {
-            margin-bottom: 30px;
+            margin-bottom: 1.5rem;
         }
 
         label {
             display: block;
-            margin-bottom: 12px;
-            font-weight: 700;
-            font-size: 14px;
-        }
-
-        select {
-            width: 100%;
-            background: #000;
-            color: #fff;
-            border: 1px solid #333;
-            padding: 15px;
+            margin-bottom: 0.5rem;
             font-weight: 600;
+            color: #2c3e50;
         }
 
-        /* UPLOAD */
+        select, input[type="file"] {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e1e5e9;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+
+        select:focus, input[type="file"]:focus {
+            outline: none;
+            border-color: #1a237e;
+        }
+
         .upload-area {
-            border: 2px dashed #333;
-            padding: 60px 40px;
+            border: 3px dashed #1a237e;
+            border-radius: 12px;
+            padding: 3rem 2rem;
             text-align: center;
+            background: rgba(26, 35, 126, 0.05);
             cursor: pointer;
-            margin-bottom: 20px;
-            transition: all 0.2s;
+            transition: all 0.3s;
         }
 
         .upload-area:hover {
-            border-color: #666;
+            background: rgba(26, 35, 126, 0.1);
         }
 
         .upload-icon {
-            font-size: 48px;
-            margin-bottom: 20px;
-            opacity: 0.7;
-        }
-
-        .upload-text {
-            font-size: 18px;
-            font-weight: 700;
-            margin-bottom: 8px;
-        }
-
-        .upload-subtext {
-            font-size: 14px;
-            color: #999;
-        }
-
-        /* BUTTON */
-        .scan-btn {
-            background: #fff;
-            color: #000;
-            border: none;
-            padding: 18px;
-            font-weight: 700;
-            font-size: 16px;
-            width: 100%;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-
-        .scan-btn:disabled {
-            background: #333;
-            color: #666;
-            cursor: not-allowed;
-        }
-
-        .scan-btn:hover:not(:disabled) {
-            background: #e0e0e0;
-        }
-
-        /* RESULTS */
-        .results-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 20px;
-            margin: 30px 0;
-        }
-
-        .found-section, .missing-section {
-            padding: 30px;
-            border: 1px solid #333;
-        }
-
-        .found-section {
-            border-color: #444;
-        }
-
-        .missing-section {
-            border-color: #666;
-        }
-
-        .section-title {
-            font-size: 16px;
-            font-weight: 700;
-            margin-bottom: 20px;
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            color: #1a237e;
         }
 
         .requirement-item {
-            padding: 15px;
-            margin: 10px 0;
-            background: #000;
-            border-left: 3px solid #333;
-            font-size: 14px;
+            padding: 1rem;
+            margin: 0.5rem 0;
+            background: #f8f9fa;
+            border-radius: 8px;
+            border-left: 4px solid #6c757d;
         }
 
         .requirement-critical {
-            border-left-color: #fff;
+            border-left-color: #dc3545;
+            background: #f8d7da;
+        }
+
+        .requirement-important {
+            border-left-color: #ffc107;
+            background: #fff3cd;
         }
 
         .requirement-verified {
-            border-left-color: #444;
+            border-left-color: #28a745;
+            background: #d4edda;
         }
 
-        /* PROGRESS */
-        .progress {
-            height: 4px;
-            background: #333;
-            margin: 20px 0;
+        .status-critical {
+            background: #dc3545;
+            color: white;
+            padding: 1rem;
+            border-radius: 8px;
+            margin: 1rem 0;
+        }
+
+        .status-warning {
+            background: #ffc107;
+            color: #856404;
+            padding: 1rem;
+            border-radius: 8px;
+            margin: 1rem 0;
+        }
+
+        .status-success {
+            background: #28a745;
+            color: white;
+            padding: 1rem;
+            border-radius: 8px;
+            margin: 1rem 0;
+        }
+
+        .progress-container {
+            margin: 2rem 0;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 20px;
+            background: #e9ecef;
+            border-radius: 10px;
+            overflow: hidden;
         }
 
         .progress-fill {
             height: 100%;
-            background: #fff;
+            background: linear-gradient(90deg, #28a745, #20c997);
+            transition: width 0.5s ease;
         }
 
-        /* LOADING */
+        .results-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+            margin: 1rem 0;
+        }
+
+        @media (max-width: 480px) {
+            .results-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .found-section, .missing-section {
+            padding: 1rem;
+            border-radius: 8px;
+        }
+
+        .found-section {
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
+        }
+
+        .missing-section {
+            background: #f8d7da;
+            border: 1px solid #f5c6cb;
+        }
+
+        .analysis-details {
+            background: #e9ecef;
+            padding: 1rem;
+            border-radius: 8px;
+            margin: 1rem 0;
+        }
+
         .loading {
             text-align: center;
-            padding: 60px 40px;
+            padding: 2rem;
         }
 
         .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #1a237e;
+            border-radius: 50%;
             width: 40px;
             height: 40px;
-            border: 3px solid #333;
-            border-top: 3px solid #fff;
-            border-radius: 50%;
             animation: spin 1s linear infinite;
-            margin: 0 auto 20px;
+            margin: 0 auto 1rem;
         }
 
         @keyframes spin {
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
         }
+
+        .watermark {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            opacity: 0.1;
+            font-size: 8rem;
+            pointer-events: none;
+            z-index: -1;
+        }
+
+        .file-info {
+            background: #e7f3ff;
+            padding: 1rem;
+            border-radius: 8px;
+            margin: 1rem 0;
+        }
     </style>
 </head>
 <body>
+    <div class="watermark">🦅</div>
+
     <div class="container">
-        <!-- HEADER -->
-        <div class="header">
-            <a href="index.html" class="back-btn">←</a>
-            <div class="title">DOCUMENT SCANNER</div>
+        <header class="header">
+            <h1>🇺🇸 US Visa Document Verification</h1>
+            <p>Professional-grade document analysis to prevent application rejection</p>
+        </header>
+
+        <div class="disclaimer">
+            <h3>⚠️ Important Legal Disclaimer</h3>
+            <p>This tool provides document verification assistance only. It is NOT legal advice and does not guarantee visa approval. Always consult with qualified immigration professionals and verify requirements with official government sources.</p>
         </div>
 
-        <!-- SCANNER CARD -->
-        <div class="card">
-            <div class="form-group">
-                <label>VISA TYPE</label>
-                <select id="visaType">
-                    <option value="B1/B2">B1/B2 TOURIST</option>
-                    <option value="F1">F1 STUDENT</option>
-                    <option value="H1B">H1B WORK</option>
-                    <option value="J1">J1 EXCHANGE</option>
-                </select>
+        <div class="main-content">
+            <div class="form-section">
+                <div class="form-group">
+                    <label for="visaType">Visa Category</label>
+                    <select id="visaType">
+                        <option value="">Select Visa Type</option>
+                        <option value="B1/B2">B1/B2 - Business/Tourist</option>
+                        <option value="F1">F1 - Student Visa</option>
+                        <option value="H1B">H1B - Specialty Occupation</option>
+                        <option value="J1">J1 - Exchange Visitor</option>
+                        <option value="L1">L1 - Intracompany Transfer</option>
+                        <option value="K1">K1 - Fiancé(e) Visa</option>
+                        <option value="CR1">CR1/IR1 - Spouse Visa</option>
+                        <option value="ESTA">ESTA - Visa Waiver</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="countryOrigin">Country of Origin</label>
+                    <select id="countryOrigin">
+                        <option value="general">General Requirements</option>
+                        <option value="india">India</option>
+                        <option value="china">China</option>
+                        <option value="mexico">Mexico</option>
+                        <option value="philippines">Philippines</option>
+                        <option value="brazil">Brazil</option>
+                        <option value="vietnam">Vietnam</option>
+                        <option value="nigeria">Nigeria</option>
+                        <option value="pakistan">Pakistan</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>Required Documents</label>
+                    <div id="requirementsList">
+                        <p>Select a visa type to see requirements</p>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Upload Documents</label>
+                    <div class="upload-area" id="uploadArea">
+                        <div class="upload-icon">📁</div>
+                        <h3>Upload Your Documents</h3>
+                        <p>Take clear photos or scans of all pages</p>
+                        <p><small>Supported: JPG, PNG • Max 5MB per file</small></p>
+                        <input type="file" id="fileInput" accept=".jpg,.jpeg,.png" multiple style="display: none;">
+                    </div>
+                    <div id="fileInfo" class="file-info" style="display: none;"></div>
+                </div>
+
+                <button id="analyzeBtn" style="width: 100%; padding: 15px; background: #1a237e; color: white; border: none; border-radius: 8px; font-size: 16px; cursor: pointer; display: none;">
+                    🔍 Analyze Documents
+                </button>
             </div>
 
-            <div class="form-group">
-                <label>COUNTRY</label>
-                <select id="country">
-                    <option value="general">GENERAL</option>
-                    <option value="india">INDIA</option>
-                    <option value="china">CHINA</option>
-                    <option value="mexico">MEXICO</option>
-                </select>
+            <div class="results-section">
+                <h2>Analysis Results</h2>
+                <div id="resultsPlaceholder">
+                    <p>Upload documents and click analyze to see results</p>
+                </div>
+                <div id="resultsContent" style="display: none;"></div>
+                <div id="loadingIndicator" class="loading" style="display: none;">
+                    <div class="spinner"></div>
+                    <p>Analyzing documents... This may take 1-2 minutes</p>
+                    <p><small>Processing: <span id="currentFile">-</span></small></p>
+                    <p><small>Status: <span id="currentStatus">Initializing</span></small></p>
+                </div>
             </div>
-
-            <div class="upload-area" id="uploadArea">
-                <div class="upload-icon">📁</div>
-                <div class="upload-text">UPLOAD DOCUMENTS</div>
-                <div class="upload-subtext">JPG, PNG • MAX 5MB</div>
-                <input type="file" id="fileInput" accept=".jpg,.jpeg,.png" multiple style="display: none;">
-            </div>
-
-            <button id="scanBtn" class="scan-btn" disabled>SCAN DOCUMENTS</button>
-        </div>
-
-        <!-- RESULTS -->
-        <div id="results" class="card" style="display: none;">
-            <div style="font-size: 20px; font-weight: 800; margin-bottom: 30px;">SCAN RESULTS</div>
-            <div id="resultsContent"></div>
-        </div>
-
-        <!-- LOADING -->
-        <div id="loading" class="loading" style="display: none;">
-            <div class="spinner"></div>
-            <div style="font-weight: 700; margin-bottom: 8px;">SCANNING</div>
-            <div style="color: #999; font-size: 14px;" id="progressText">PROCESSING</div>
         </div>
     </div>
 
     <script>
-        const requirements = {
-            "B1/B2": [
-                { name: "DS-160 CONFIRMATION", critical: true, keywords: ["ds-160", "ds160", "confirmation"] },
-                { name: "PASSPORT 6+ MONTHS", critical: true, keywords: ["passport", "travel document"] },
-                { name: "2x2 PHOTO", critical: true, keywords: ["photo", "2x2", "photograph"] },
-                { name: "FINANCIAL EVIDENCE", critical: true, keywords: ["bank", "statement", "financial"] }
-            ],
-            "F1": [
-                { name: "FORM I-20", critical: true, keywords: ["i-20", "form i-20"] },
-                { name: "DS-160 CONFIRMATION", critical: true, keywords: ["ds-160", "confirmation"] },
-                { name: "PASSPORT", critical: true, keywords: ["passport"] },
-                { name: "SEVIS RECEIPT", critical: true, keywords: ["sevis", "i-901"] }
-            ]
+        // Enhanced visa requirements database
+        const visaRequirements = {
+            "B1/B2": {
+                documents: [
+                    { name: "DS-160 Confirmation Page", critical: true, keywords: ["ds-160", "ds160", "confirmation"] },
+                    { name: "Valid Passport (6+ months)", critical: true, keywords: ["passport", "travel document"] },
+                    { name: "2x2 Color Photograph", critical: true, keywords: ["photo", "2x2", "photograph"] },
+                    { name: "Financial Evidence (6 months)", critical: true, keywords: ["bank", "statement", "financial", "income"] },
+                    { name: "Employment Verification", critical: false, keywords: ["employment", "employer", "job"] },
+                    { name: "Travel Itinerary", critical: false, keywords: ["itinerary", "flight", "hotel"] },
+                    { name: "Previous Travel History", critical: false, keywords: ["travel", "previous", "countries"] },
+                    { name: "Proof of Ties to Home Country", critical: true, keywords: ["ties", "family", "property", "business"] }
+                ],
+                countrySpecific: {
+                    india: ["Income Tax Returns (3 years)", "Property Documents"],
+                    china: ["Family Registry (Hukou)", "Business Registration"],
+                    mexico: ["Mexican Passport Card", "Border Crossing History"],
+                    philippines: ["Certificate of Employment", "Bank Certificate"],
+                    brazil: ["CPF Document", "Voter ID"],
+                    vietnam: ["Household Registration", "Police Certificate"],
+                    nigeria: ["Bank Verification Number", "Tax Clearance"],
+                    pakistan: ["CNIC Copy", "Tax Documents"]
+                }
+            },
+            "F1": {
+                documents: [
+                    { name: "Form I-20", critical: true, keywords: ["i-20", "form i-20", "certificate"] },
+                    { name: "DS-160 Confirmation", critical: true, keywords: ["ds-160", "confirmation"] },
+                    { name: "Valid Passport", critical: true, keywords: ["passport"] },
+                    { name: "SEVIS I-901 Receipt", critical: true, keywords: ["sevis", "i-901", "fee"] },
+                    { name: "Financial Support Documents", critical: true, keywords: ["financial", "bank", "sponsor", "funding"] },
+                    { name: "Academic Transcripts/Diplomas", critical: true, keywords: ["transcript", "diploma", "academic"] },
+                    { name: "Standardized Test Scores", critical: false, keywords: ["toefl", "ielts", "gre", "gmat"] },
+                    { name: "University Acceptance Letter", critical: true, keywords: ["acceptance", "admission", "university"] }
+                ]
+            },
+            "H1B": {
+                documents: [
+                    { name: "Form I-129 Petition", critical: true, keywords: ["i-129", "petition"] },
+                    { name: "LCA ETA-9035", critical: true, keywords: ["lca", "eta-9035", "labor"] },
+                    { name: "Valid Passport", critical: true, keywords: ["passport"] },
+                    { name: "Educational Credentials", critical: true, keywords: ["degree", "diploma", "education"] },
+                    { name: "Resume/Work Experience", critical: true, keywords: ["resume", "cv", "experience"] },
+                    { name: "Employer Support Letter", critical: true, keywords: ["employer", "support", "letter"] },
+                    { name: "Job Description", critical: true, keywords: ["job", "description", "duties"] },
+                    { name: "Previous Employment Proof", critical: false, keywords: ["previous", "employment", "experience"] }
+                ]
+            }
         };
 
-        let files = [];
-
-        // Upload handling
+        // DOM Elements
+        const visaTypeSelect = document.getElementById('visaType');
+        const countryOriginSelect = document.getElementById('countryOrigin');
+        const requirementsList = document.getElementById('requirementsList');
         const uploadArea = document.getElementById('uploadArea');
         const fileInput = document.getElementById('fileInput');
-        const scanBtn = document.getElementById('scanBtn');
+        const fileInfo = document.getElementById('fileInfo');
+        const analyzeBtn = document.getElementById('analyzeBtn');
+        const resultsContent = document.getElementById('resultsContent');
+        const resultsPlaceholder = document.getElementById('resultsPlaceholder');
+        const loadingIndicator = document.getElementById('loadingIndicator');
+        const currentFileSpan = document.getElementById('currentFile');
+        const currentStatusSpan = document.getElementById('currentStatus');
 
-        uploadArea.addEventListener('click', () => fileInput.click());
+        let currentFiles = [];
+        let currentVisaType = '';
+        let currentCountry = 'general';
+
+        // Event Listeners
+        visaTypeSelect.addEventListener('change', updateRequirements);
+        countryOriginSelect.addEventListener('change', updateRequirements);
         
-        fileInput.addEventListener('change', (e) => {
-            files = Array.from(e.target.files).filter(file => 
-                ['image/jpeg', 'image/jpg', 'image/png'].includes(file.type) && 
-                file.size <= 5 * 1024 * 1024
-            );
+        uploadArea.addEventListener('click', () => fileInput.click());
+        fileInput.addEventListener('change', handleFileSelect);
+        analyzeBtn.addEventListener('click', analyzeDocuments);
 
-            if (files.length > 0) {
+        function updateRequirements() {
+            currentVisaType = visaTypeSelect.value;
+            currentCountry = countryOriginSelect.value;
+            
+            if (!currentVisaType) {
+                requirementsList.innerHTML = '<p>Select a visa type to see requirements</p>';
+                analyzeBtn.style.display = 'none';
+                return;
+            }
+
+            const requirements = visaRequirements[currentVisaType];
+            if (!requirements) return;
+
+            let html = '';
+            
+            // Main documents
+            requirements.documents.forEach(doc => {
+                const criticalClass = doc.critical ? 'requirement-critical' : 'requirement-important';
+                html += `
+                    <div class="requirement-item ${criticalClass}">
+                        <strong>${doc.critical ? '🚨 ' : '⚠️ '}${doc.name}</strong>
+                        ${doc.critical ? '<br><small style="color: #dc3545;">CRITICAL - Application will be rejected if missing</small>' : ''}
+                    </div>
+                `;
+            });
+
+            // Country-specific documents
+            if (requirements.countrySpecific && requirements.countrySpecific[currentCountry]) {
+                html += '<div style="margin-top: 1rem; padding-top: 1rem; border-top: 2px solid #1a237e;">';
+                html += '<strong>Additional requirements for ' + currentCountry.charAt(0).toUpperCase() + currentCountry.slice(1) + ':</strong>';
+                requirements.countrySpecific[currentCountry].forEach(doc => {
+                    html += `<div class="requirement-item requirement-important">⚠️ ${doc}</div>`;
+                });
+                html += '</div>';
+            }
+
+            requirementsList.innerHTML = html;
+            analyzeBtn.style.display = currentFiles.length > 0 ? 'block' : 'none';
+        }
+
+        function handleFileSelect(event) {
+            const files = Array.from(event.target.files);
+            currentFiles = [];
+            
+            // Validate files
+            const validFiles = files.filter(file => {
+                const isValidType = ['image/jpeg', 'image/jpg', 'image/png'].includes(file.type);
+                const isValidSize = file.size <= 5 * 1024 * 1024; // 5MB
+                
+                if (!isValidType) {
+                    alert(`❌ Unsupported file type: ${file.name}. Please use JPG or PNG files.`);
+                    return false;
+                }
+                
+                if (!isValidSize) {
+                    alert(`❌ File too large: ${file.name}. Maximum size is 5MB.`);
+                    return false;
+                }
+                
+                return true;
+            });
+
+            currentFiles = validFiles;
+            
+            if (currentFiles.length > 0) {
                 uploadArea.innerHTML = `
                     <div class="upload-icon">✅</div>
-                    <div class="upload-text">${files.length} FILES READY</div>
-                    <div class="upload-subtext">CLICK SCAN TO VERIFY</div>
+                    <h3>${currentFiles.length} File(s) Selected</h3>
+                    <p>Ready for analysis</p>
                 `;
-                scanBtn.disabled = false;
+                
+                // Show file info
+                fileInfo.style.display = 'block';
+                fileInfo.innerHTML = `
+                    <strong>Selected Files:</strong><br>
+                    ${currentFiles.map(file => 
+                        `• ${file.name} (${(file.size / 1024 / 1024).toFixed(2)} MB)`
+                    ).join('<br>')}
+                `;
+                
+                if (currentVisaType) {
+                    analyzeBtn.style.display = 'block';
+                }
+            } else {
+                uploadArea.innerHTML = `
+                    <div class="upload-icon">📁</div>
+                    <h3>Upload Your Documents</h3>
+                    <p>Take clear photos or scans of all pages</p>
+                    <p><small>Supported: JPG, PNG • Max 5MB per file</small></p>
+                `;
+                fileInfo.style.display = 'none';
+                analyzeBtn.style.display = 'none';
             }
-        });
+        }
 
-        // Scan function
-        scanBtn.addEventListener('click', scanDocuments);
-
-        async function scanDocuments() {
-            const visaType = document.getElementById('visaType').value;
-            
-            if (!files.length) return;
+        async function analyzeDocuments() {
+            if (!currentVisaType || currentFiles.length === 0) {
+                alert('Please select a visa type and upload documents');
+                return;
+            }
 
             // Show loading
-            document.getElementById('loading').style.display = 'block';
-            document.getElementById('results').style.display = 'none';
-            scanBtn.disabled = true;
-            scanBtn.textContent = 'SCANNING...';
+            resultsPlaceholder.style.display = 'none';
+            resultsContent.style.display = 'none';
+            loadingIndicator.style.display = 'block';
+            analyzeBtn.disabled = true;
 
             try {
-                let text = '';
-                const progress = document.getElementById('progressText');
+                let allText = '';
+                let processedFiles = 0;
 
-                for (let i = 0; i < files.length; i++) {
-                    progress.textContent = `FILE ${i + 1}/${files.length}`;
-                    const result = await Tesseract.recognize(files[i], 'eng');
-                    text += '\n\n' + result.data.text;
+                // Initialize Tesseract first
+                currentStatusSpan.textContent = 'Loading OCR engine...';
+                const worker = await Tesseract.createWorker('eng');
+                
+                // Process each file with progress updates
+                for (const file of currentFiles) {
+                    currentFileSpan.textContent = file.name;
+                    currentStatusSpan.textContent = 'Processing image...';
+
+                    try {
+                        const result = await worker.recognize(file, {
+                            logger: progress => {
+                                if (progress.status === 'recognizing text') {
+                                    const percent = Math.round(progress.progress * 100);
+                                    currentStatusSpan.textContent = `Recognizing text: ${percent}%`;
+                                } else {
+                                    currentStatusSpan.textContent = progress.status;
+                                }
+                            }
+                        });
+
+                        allText += '\n\n' + result.data.text;
+                        processedFiles++;
+                        
+                    } catch (fileError) {
+                        console.error(`Error processing ${file.name}:`, fileError);
+                        throw new Error(`Failed to process ${file.name}: ${fileError.message}`);
+                    }
                 }
 
-                const analysis = analyzeText(text, visaType);
-                showResults(analysis, text);
+                // Terminate worker
+                await worker.terminate();
+
+                // Analyze the combined text
+                currentStatusSpan.textContent = 'Analyzing content...';
+                const analysis = performAnalysis(allText, currentVisaType, currentCountry);
+                displayResults(analysis, allText);
 
             } catch (error) {
-                alert('SCAN FAILED: ' + error.message);
+                console.error('Analysis error:', error);
+                resultsContent.innerHTML = `
+                    <div class="status-critical">
+                        <h3>❌ Analysis Failed</h3>
+                        <p><strong>Error:</strong> ${error.message || 'Unknown error occurred'}</p>
+                        <div style="margin-top: 1rem;">
+                            <strong>Common Solutions:</strong>
+                            <ul style="margin: 0.5rem 0; padding-left: 1.5rem;">
+                                <li>Use clear, high-contrast images</li>
+                                <li>Ensure text is readable and not blurry</li>
+                                <li>Try cropping to just the document content</li>
+                                <li>Use JPG or PNG format (not PDF)</li>
+                                <li>Check file size (under 5MB)</li>
+                            </ul>
+                        </div>
+                    </div>
+                `;
+                resultsContent.style.display = 'block';
             } finally {
-                document.getElementById('loading').style.display = 'none';
-                scanBtn.disabled = false;
-                scanBtn.textContent = 'SCAN DOCUMENTS';
+                loadingIndicator.style.display = 'none';
+                analyzeBtn.disabled = false;
+                currentFileSpan.textContent = '-';
+                currentStatusSpan.textContent = 'Initializing';
             }
         }
 
-        function analyzeText(text, visaType) {
-            const reqs = requirements[visaType] || [];
-            const lower = text.toLowerCase();
+        function performAnalysis(text, visaType, country) {
+            const requirements = visaRequirements[visaType];
+            const lowerText = text.toLowerCase();
             
-            const found = reqs.filter(doc => 
-                doc.keywords.some(kw => lower.includes(kw))
-            );
-            const missing = reqs.filter(doc => 
-                !doc.keywords.some(kw => lower.includes(kw))
-            );
-            const confidence = Math.round((found.length / reqs.length) * 100);
+            const results = {
+                found: [],
+                missing: [],
+                criticalMissing: 0,
+                confidence: 0,
+                warnings: []
+            };
 
-            return { found, missing, confidence };
+            // Check main documents
+            requirements.documents.forEach(doc => {
+                let found = false;
+                let confidence = 0;
+
+                // Check each keyword with weighted scoring
+                doc.keywords.forEach(keyword => {
+                    if (lowerText.includes(keyword.toLowerCase())) {
+                        found = true;
+                        confidence += (1 / doc.keywords.length) * 100;
+                    }
+                });
+
+                if (found && confidence >= 60) {
+                    results.found.push({
+                        ...doc,
+                        confidence: Math.round(confidence)
+                    });
+                } else {
+                    results.missing.push(doc);
+                    if (doc.critical) results.criticalMissing++;
+                }
+            });
+
+            // Check country-specific requirements
+            if (requirements.countrySpecific && requirements.countrySpecific[country]) {
+                requirements.countrySpecific[country].forEach(doc => {
+                    // Simple check for country-specific docs
+                    const found = requirements.countrySpecific[country].some(countryDoc => 
+                        lowerText.includes(countryDoc.toLowerCase().substring(0, 10))
+                    );
+                    
+                    if (!found) {
+                        results.missing.push({
+                            name: doc,
+                            critical: true,
+                            countrySpecific: true
+                        });
+                        results.criticalMissing++;
+                    }
+                });
+            }
+
+            // Calculate overall confidence
+            const totalDocs = requirements.documents.length;
+            results.confidence = Math.round((results.found.length / totalDocs) * 100);
+
+            // Generate warnings
+            if (results.criticalMissing > 0) {
+                results.warnings.push(`🚨 ${results.criticalMissing} CRITICAL documents missing - Application will likely be rejected`);
+            }
+            if (results.confidence < 80) {
+                results.warnings.push(`⚠️ Low document confidence (${results.confidence}%) - Review missing items carefully`);
+            }
+
+            return results;
         }
 
-        function showResults(analysis, text) {
-            const content = document.getElementById('resultsContent');
+        function displayResults(analysis, extractedText) {
+            let html = '';
+
+            // Overall status
+            if (analysis.criticalMissing > 0) {
+                html += `<div class="status-critical">
+                    <h3>❌ HIGH RISK OF REJECTION</h3>
+                    <p>${analysis.criticalMissing} critical documents missing</p>
+                </div>`;
+            } else if (analysis.confidence >= 90) {
+                html += `<div class="status-success">
+                    <h3>✅ READY FOR SUBMISSION</h3>
+                    <p>High confidence in document completeness</p>
+                </div>`;
+            } else {
+                html += `<div class="status-warning">
+                    <h3>⚠️ NEEDS REVIEW</h3>
+                    <p>Some documents may need verification</p>
+                </div>`;
+            }
+
+            // Progress bar
+            html += `
+                <div class="progress-container">
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
+                        <span>Document Confidence</span>
+                        <span><strong>${analysis.confidence}%</strong></span>
+                    </div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="width: ${analysis.confidence}%"></div>
+                    </div>
+                </div>
+            `;
+
+            // Warnings
+            if (analysis.warnings.length > 0) {
+                html += '<div class="analysis-details">';
+                html += '<h4>Important Notices:</h4>';
+                analysis.warnings.forEach(warning => {
+                    html += `<p>${warning}</p>`;
+                });
+                html += '</div>';
+            }
+
+            // Results grid
+            html += '<div class="results-grid">';
             
-            let html = `
-                <div class="progress">
-                    <div class="progress-fill" style="width: ${analysis.confidence}%"></div>
-                </div>
-                <div style="display: flex; justify-content: space-between; font-size: 14px; margin-bottom: 30px;">
-                    <span>CONFIDENCE</span>
-                    <span style="font-weight: 700;">${analysis.confidence}%</span>
-                </div>
+            // Found documents
+            html += `<div class="found-section">
+                <h4>✅ Verified (${analysis.found.length})</h4>`;
+            analysis.found.forEach(doc => {
+                html += `<div class="requirement-item requirement-verified">
+                    <strong>${doc.name}</strong>
+                    <br><small>Confidence: ${doc.confidence}%</small>
+                </div>`;
+            });
+            html += '</div>';
 
-                <div class="results-grid">
-                    <div class="found-section">
-                        <div class="section-title">FOUND (${analysis.found.length})</div>
-                        ${analysis.found.map(doc => `
-                            <div class="requirement-item requirement-verified">
-                                ${doc.name}
-                            </div>
-                        `).join('')}
-                    </div>
+            // Missing documents
+            html += `<div class="missing-section">
+                <h4>❌ Missing (${analysis.missing.length})</h4>`;
+            analysis.missing.forEach(doc => {
+                const criticalClass = doc.critical ? 'requirement-critical' : 'requirement-item';
+                html += `<div class="${criticalClass}">
+                    <strong>${doc.critical ? '🚨 ' : '⚠️ '}${doc.name}</strong>
+                    ${doc.countrySpecific ? '<br><small>Country-specific requirement</small>' : ''}
+                </div>`;
+            });
+            html += '</div>';
 
-                    <div class="missing-section">
-                        <div class="section-title">MISSING (${analysis.missing.length})</div>
-                        ${analysis.missing.map(doc => `
-                            <div class="requirement-item ${doc.critical ? 'requirement-critical' : ''}">
-                                ${doc.critical ? '🚨 ' : ''}${doc.name}
-                            </div>
-                        `).join('')}
-                    </div>
-                </div>
+            html += '</div>';
 
-                <details style="margin-top: 30px;">
-                    <summary style="cursor: pointer; font-weight: 700; padding: 15px 0;">EXTRACTED TEXT</summary>
-                    <div style="background: #000; padding: 20px; margin-top: 10px; max-height: 200px; overflow: auto;">
-                        <pre style="font-size: 12px; line-height: 1.4; white-space: pre-wrap;">${text.substring(0, 2000)}</pre>
+            // Extracted text preview
+            html += `
+                <details style="margin-top: 2rem;">
+                    <summary style="cursor: pointer; font-weight: bold; padding: 1rem; background: #e9ecef; border-radius: 8px;">
+                        📋 View Extracted Text (For Verification)
+                    </summary>
+                    <div style="background: white; padding: 1rem; margin-top: 0.5rem; border-radius: 8px; max-height: 300px; overflow: auto;">
+                        <pre style="white-space: pre-wrap; font-size: 12px; line-height: 1.4;">${extractedText.substring(0, 5000)}</pre>
                     </div>
                 </details>
             `;
 
-            content.innerHTML = html;
-            document.getElementById('results').style.display = 'block';
+            resultsContent.innerHTML = html;
+            resultsContent.style.display = 'block';
         }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            console.log('Visa Document Scanner initialized');
+        });
     </script>
 </body>
 </html>

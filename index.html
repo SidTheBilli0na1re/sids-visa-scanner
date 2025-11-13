@@ -66,7 +66,8 @@
     .wrap { 
       max-width: 1100px; 
       margin: 0 auto; 
-      padding: 0 32px; 
+      padding: 0 32px;
+      min-height: calc(100vh - 60px);
     }
 
     .hero { 
@@ -143,7 +144,7 @@
       padding: 0 0 16px; 
       border-bottom: 1px solid var(--border); 
       margin-bottom: 24px;
-      margin-top: 32px;
+      margin-top: 0;
     }
     
     .panel-header > div:first-child {
@@ -772,12 +773,8 @@
 
         backToMenu.style.display = panel === menu ? 'none' : 'inline';
 
-        setTimeout(()=>{
-          const topbarHeight = document.querySelector('.topbar').offsetHeight || 0;
-          const rect = panel.getBoundingClientRect();
-          const targetY = window.pageYOffset + rect.top - topbarHeight - 20;
-          window.scrollTo({ top: Math.max(0, targetY), behavior: 'smooth' });
-        }, 50);
+        // Scroll to top immediately when switching panels
+        window.scrollTo({ top: 0, behavior: 'smooth' });
       }
 
       cardScan.addEventListener('click', () => showPanel(scanner));

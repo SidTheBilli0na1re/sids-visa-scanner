@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Admin Dashboard - Sid's VisaFlow</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <div class="topbar">
+    <div class="brand">Sid's VisaFlow - Admin</div>
+    <a href="index.html" class="back-link">← Back to Home</a>
+  </div>
+
+  <main class="wrap">
+    <!-- Login Form (shown first) -->
+    <div id="loginSection" class="auth-container" style="display:block">
+      <h2>Admin Login</h2>
+      <form id="loginForm">
+        <div class="form-group">
+          <label class="form-label" for="adminEmail">Email</label>
+          <input type="email" id="adminEmail" value="admin@visaflow.com" required>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="adminPassword">Password</label>
+          <input type="password" id="adminPassword" value="admin123" required>
+        </div>
+
+        <button type="submit" class="btn">Login</button>
+      </form>
+      
+      <div style="margin-top:16px;font-size:13px;color:var(--text-muted);text-align:center">
+        Demo credentials: admin@visaflow.com / admin123
+      </div>
+    </div>
+
+    <!-- Dashboard (shown after login) -->
+    <div id="dashboardSection" style="display:none">
+      <div class="panel-header">
+        <div>Dashboard Overview</div>
+        <button class="btn" onclick="logout()" style="background:#dc2626">Logout</button>
+      </div>
+
+      <div class="dashboard-grid">
+        <div class="stat-card">
+          <h3>Total Applications</h3>
+          <div class="stat-value">1,247</div>
+          <div class="stat-change">+12% from last month</div>
+        </div>
+
+        <div class="stat-card">
+          <h3>Pending Review</h3>
+          <div class="stat-value">89</div>
+          <div class="stat-change">-5% from last week</div>
+        </div>
+
+        <div class="stat-card">
+          <h3>Approved</h3>
+          <div class="stat-value">956</div>
+          <div class="stat-change">+8% from last month</div>
+        </div>
+
+        <div class="stat-card">
+          <h3>Documents Scanned</h3>
+          <div class="stat-value">3,482</div>
+          <div class="stat-change">+15% from last month</div>
+        </div>
+      </div>
+
+      <div style="margin-top:40px">
+        <h3 style="font-size:18px;margin-bottom:16px">Recent Applications</h3>
+        <table>
+          <thead>
+            <tr>
+              <th>Reference #</th>
+              <th>Applicant</th>
+              <th>Visa Type</th>
+              <th>Status</th>
+              <th>Date</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>VIS-2024-001</td>
+              <td>John Smith</td>
+              <td>B1/B2</td>
+              <td><span class="badge badge-success">Approved</span></td>
+              <td>Nov 14, 2024</td>
+            </tr>
+            <tr>
+              <td>VIS-2024-002</td>
+              <td>Maria Garcia</td>
+              <td>F1</td>
+              <td><span class="badge badge-pending">Pending</span></td>
+              <td>Nov 14, 2024</td>
+            </tr>
+            <tr>
+              <td>VIS-2024-003</td>
+              <td>Wei Chen</td>
+              <td>H1B</td>
+              <td><span class="badge badge-pending">Under Review</span></td>
+              <td>Nov 13, 2024</td>
+            </tr>
+            <tr>
+              <td>VIS-2024-004</td>
+              <td>Sarah Johnson</td>
+              <td>B1/B2</td>
+              <td><span class="badge badge-rejected">Rejected</span></td>
+              <td>Nov 13, 2024</td>
+            </tr>
+            <tr>
+              <td>VIS-2024-005</td>
+              <td>Ahmed Hassan</td>
+              <td>F1</td>
+              <td><span class="badge badge-success">Approved</span></td>
+              <td>Nov 12, 2024</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div style="margin-top:40px">
+        <h3 style="font-size:18px;margin-bottom:16px">System Statistics</h3>
+        <div class="dashboard-grid">
+          <div class="stat-card">
+            <h3>Average Processing Time</h3>
+            <div class="stat-value">4.2 <span style="font-size:16px;font-weight:400">days</span></div>
+            <div class="stat-change">-0.5 days from last month</div>
+          </div>
+
+          <div class="stat-card">
+            <h3>Document Accuracy</h3>
+            <div class="stat-value">94.7%</div>
+            <div class="stat-change">+2.1% from last month</div>
+          </div>
+
+          <div class="stat-card">
+            <h3>Active Users</h3>
+            <div class="stat-value">342</div>
+            <div class="stat-change">+23% from last month</div>
+          </div>
+
+          <div class="stat-card">
+            <h3>Success Rate</h3>
+            <div class="stat-value">76.6%</div>
+            <div class="stat-change">+3.2% from last month</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    const loginSection = document.getElementById('loginSection');
+    const dashboardSection = document.getElementById('dashboardSection');
+
+    // Check if admin is already logged in
+    if (localStorage.getItem('visaflow_admin')) {
+      showDashboard();
+    }
+
+    document.getElementById('loginForm').addEventListener('submit', function(e) {
+      e.preventDefault();
+      
+      const email = document.getElementById('adminEmail').value;
+      const password = document.getElementById('adminPassword').value;
+
+      // Simple authentication (in production, this would be server-side)
+      if (email === 'admin@visaflow.com' && password === 'admin123') {
+        localStorage.setItem('visaflow_admin', 'true');
+        showDashboard();
+      } else {
+        alert('Invalid credentials. Use: admin@visaflow.com / admin123');
+      }
+    });
+
+    function showDashboard() {
+      loginSection.style.display = 'none';
+      dashboardSection.style.display = 'block';
+    }
+
+    function logout() {
+      localStorage.removeItem('visaflow_admin');
+      loginSection.style.display = 'block';
+      dashboardSection.style.display = 'none';
+    }
+  </script>
+</body>
+</html>

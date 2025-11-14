@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Scanner - Sid's VisaFlow</title>
+  <script src="https://unpkg.com/tesseract.js@4.1.1/dist/tesseract.min.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <div class="topbar">
+    <div class="brand">Sid's VisaFlow</div>
+    <a href="index.html" class="back-link">← Back to Home</a>
+  </div>
+
+  <main class="wrap">
+    <div class="panel-header">
+      <div>Scanner <span>History (0)</span></div>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label" for="visaType">Visa Category</label>
+      <select id="visaType">
+        <option value="">Select Visa Type</option>
+        <option value="B1/B2">B1/B2 - Business/Tourist</option>
+        <option value="F1">F1 - Student Visa</option>
+        <option value="H1B">H1B - Specialty Occupation</option>
+      </select>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label" for="countryOrigin">Country of Origin</label>
+      <select id="countryOrigin">
+        <option value="general">General Requirements</option>
+        <option value="india">India</option>
+        <option value="china">China</option>
+        <option value="mexico">Mexico</option>
+      </select>
+    </div>
+
+    <div id="requirementsList" class="requirements-list">
+      Select a visa type to see requirements
+    </div>
+
+    <button id="analyzeBtn" class="btn pressable" style="display:none">
+      <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="11" cy="11" r="6" stroke="currentColor" stroke-width="1.6"/>
+        <path d="M21 21l-4.35-4.35" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+      </svg>
+      Analyze Documents
+    </button>
+
+    <div id="fileInfo" class="file-info"></div>
+
+    <div style="margin-top: 28px">
+      <div class="upload-card pressable" id="uploadArea" tabindex="0">
+        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M12 4v8" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+          <path d="M8 8l4-4 4 4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+          <rect x="3" y="12" width="18" height="7" rx="1" stroke="currentColor" stroke-width="1.2"/>
+        </svg>
+        <h4>Upload document image</h4>
+        <small>PNG, JPG, or PDF (max 10MB)</small>
+        <input id="fileInput" type="file" accept="image/*,.pdf" style="display:none" multiple>
+      </div>
+    </div>
+
+    <div id="resultsPlaceholder" style="color:var(--text-muted);margin-top:24px;font-size:14px">
+      Upload documents and click analyze to see results
+    </div>
+    
+    <div id="resultsContent" style="display:none" class="results-area"></div>
+    
+    <div id="loadingIndicator" class="loading" style="display:none">
+      <div>Analyzing documents... <span id="currentStatus">Initializing</span></div>
+    </div>
+  </main>
+
+  <script src="js/scanner.js"></script>
+</body>
+</html>

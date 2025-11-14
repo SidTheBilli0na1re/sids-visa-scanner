@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Track Application - Sid's VisaFlow</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <div class="topbar">
+    <div class="brand">Sid's VisaFlow</div>
+    <a href="index.html" class="back-link">← Back to Home</a>
+  </div>
+
+  <main class="wrap">
+    <div class="panel-header">
+      <div>Check Application Status</div>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">Application Reference Number</label>
+      <div class="track-row">
+        <input id="refInput" type="text" placeholder="e.g., VIS-2024-123456">
+        <button class="btn pressable" id="checkBtn">
+          <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="11" cy="11" r="6" stroke="currentColor" stroke-width="1.6"/>
+            <path d="M21 21l-4.35-4.35" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+          </svg>
+          Check Status
+        </button>
+      </div>
+    </div>
+
+    <div id="statusResult" style="margin-top: 32px"></div>
+  </main>
+
+  <script>
+    // Check if user is logged in
+    if (!localStorage.getItem('visaflow_user')) {
+      window.location.href = 'signup.html?redirect=tracker.html';
+    }
+
+    document.getElementById('checkBtn').addEventListener('click', function() {
+      const refNum = document.getElementById('refInput').value.trim();
+      
+      if (!refNum) {
+        alert('Please enter a reference number');
+        return;
+      }
+
+      // Simulate checking status
+      const statusResult = document.getElementById('statusResult');
+      const statuses = ['Approved', 'Pending', 'Under Review', 'Rejected'];
+      const randomStatus = statuses[Math.floor(Math.random() * statuses.length)];
+      
+      let badgeClass = 'badge-pending';
+      if (randomStatus === 'Approved') badgeClass = 'badge-success';
+      if (randomStatus === 'Rejected') badgeClass = 'badge-rejected';
+
+      statusResult.innerHTML = `
+        <div style="background:#fff;border:1px solid var(--border);border-radius:var(--radius);padding:24px;box-shadow:var(--shadow-sm)">
+          <h3 style="font-size:18px;margin-bottom:16px">Application Status</h3>
+          <div style="margin-bottom:12px">
+            <strong>Reference Number:</strong> ${refNum}
+          </div>
+          <div style="margin-bottom:12px">
+            <strong>Status:</strong> <span class="badge ${badgeClass}">${randomStatus}</span>
+          </div>
+          <div style="margin-bottom:12px">
+            <strong>Last Updated:</strong> ${new Date().toLocaleDateString()}
+          </div>
+          <div style="color:var(--text-muted);font-size:14px;margin-top:16px;padding-top:16px;border-top:1px solid var(--border)">
+            This is a demo application. In a real system, this would show actual application status from the visa processing system.
+          </div>
+        </div>
+      `;
+    });
+  </script>
+</body>
+</html>
